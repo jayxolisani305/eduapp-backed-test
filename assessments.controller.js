@@ -1,5 +1,5 @@
 // assessments.controller.js - Updated with auto-approval for admin
-import db from '../models/db.js';
+import db from './db.js';
 
 // ----------------- CREATE ASSESSMENT -----------------
 export const createAssessment = async (req, res) => {
@@ -502,4 +502,5 @@ export const getAssessment = async (req, res) => {
     console.error('❌ Get assessment error:', error);
     res.status(500).json({ error: 'Failed to fetch assessment' });
   }
+
 };
