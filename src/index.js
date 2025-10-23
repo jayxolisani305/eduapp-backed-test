@@ -56,22 +56,10 @@ app.use('/student', studentDashboardRoutes);
 app.get('/dashboard', (req, res) => res.json({ message: 'Authenticated!' }));
 app.get('/admin', (req, res) => res.json({ message: 'Admin route!' }));
 
-// ... your existing routes above ...
-
-// Example routes
-app.get('/dashboard', (req, res) => res.json({ message: 'Authenticated!' }));
-app.get('/admin', (req, res) => res.json({ message: 'Admin route!' }));
-
-// 🔧 EMAIL DEBUG ROUTES
+// 🔧 DEBUG ROUTES - Add these before app.listen()
 app.get('/debug-email', (req, res) => {
   res.json({
-    // Email Configuration
-    smtpHost: process.env.SMTP_HOST || 'MISSING',
-    smtpPort: process.env.SMTP_PORT || 'MISSING', 
-    smtpUser: process.env.SMTP_USER || 'MISSING',
-    smtpPass: process.env.SMTP_PASS ? '***' + process.env.SMTP_PASS.slice(-4) : 'MISSING',
-    
-    // Basic info
+    hasSendGridKey: !!process.env.SENDGRID_API_KEY ? '***' + process.env.SENDGRID_API_KEY.slice(-4) : 'MISSING',
     nodeEnv: process.env.NODE_ENV || 'not set',
     backendUrl: process.env.BACKEND_URL || 'not set'
   });
@@ -79,28 +67,22 @@ app.get('/debug-email', (req, res) => {
 
 app.get('/test-email', async (req, res) => {
   try {
-    console.log('🔄 Starting email test...');
+    console.log('🔄 Testing SendGrid email...');
     
-    // Import your email function
+    // Import your email function (adjust path if needed)
     const { sendVerificationEmail } = await import('./services/email.js');
     
     const testUrl = 'https://eduapp-backed-test-7.onrender.com/verify?token=test123';
-    const testEmail = 'jamjamxolisani@gmail.com'; // Your email
-    
-    console.log('📧 Testing email to:', testEmail);
-    
-    const result = await sendVerificationEmail(testEmail, testUrl);
-    
-    console.log('📤 Email test result:', result);
+    const result = await sendVerificationEmail('jamjamxolisani@gmail.com', testUrl);
     
     res.json({
-      success: result?.success,
-      message: result?.success ? '✅ Test email sent - check your inbox and spam folder' : '❌ Failed to send email',
-      error: result?.error,
-      testEmail: testEmail
+      success: result.success,
+      message: result.success ? 
+        '✅ SendGrid test email sent - check your inbox!' : 
+        `❌ Failed: ${result.error}`,
+      messageId: result.messageId
     });
   } catch (error) {
-    console.error('💥 Email test error:', error);
     res.json({
       success: false,
       error: error.message
@@ -116,7 +98,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Single port for Render
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
 
