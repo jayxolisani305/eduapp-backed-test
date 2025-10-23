@@ -56,6 +56,67 @@ app.use('/student', studentDashboardRoutes);
 app.get('/dashboard', (req, res) => res.json({ message: 'Authenticated!' }));
 app.get('/admin', (req, res) => res.json({ message: 'Admin route!' }));
 
+// ... your existing routes above ...
+
+// Example routes
+app.get('/dashboard', (req, res) => res.json({ message: 'Authenticated!' }));
+app.get('/admin', (req, res) => res.json({ message: 'Admin route!' }));
+
+// 🔧 EMAIL DEBUG ROUTES
+app.get('/debug-email', (req, res) => {
+  res.json({
+    // Email Configuration
+    smtpHost: process.env.SMTP_HOST || 'MISSING',
+    smtpPort: process.env.SMTP_PORT || 'MISSING', 
+    smtpUser: process.env.SMTP_USER || 'MISSING',
+    smtpPass: process.env.SMTP_PASS ? '***' + process.env.SMTP_PASS.slice(-4) : 'MISSING',
+    
+    // Basic info
+    nodeEnv: process.env.NODE_ENV || 'not set',
+    backendUrl: process.env.BACKEND_URL || 'not set'
+  });
+});
+
+app.get('/test-email', async (req, res) => {
+  try {
+    console.log('🔄 Starting email test...');
+    
+    // Import your email function
+    const { sendVerificationEmail } = await import('./services/email.js');
+    
+    const testUrl = 'https://eduapp-backed-test-7.onrender.com/verify?token=test123';
+    const testEmail = 'jamjamxolisani@gmail.com'; // Your email
+    
+    console.log('📧 Testing email to:', testEmail);
+    
+    const result = await sendVerificationEmail(testEmail, testUrl);
+    
+    console.log('📤 Email test result:', result);
+    
+    res.json({
+      success: result?.success,
+      message: result?.success ? '✅ Test email sent - check your inbox and spam folder' : '❌ Failed to send email',
+      error: result?.error,
+      testEmail: testEmail
+    });
+  } catch (error) {
+    console.error('💥 Email test error:', error);
+    res.json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date(),
+    service: 'EduApp Backend'
+  });
+});
+
 // Single port for Render
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
