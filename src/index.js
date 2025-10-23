@@ -69,16 +69,16 @@ app.get('/test-email', async (req, res) => {
   try {
     console.log('🔄 Testing SendGrid email...');
     
-    // Import your email function (adjust path if needed)
     const { sendVerificationEmail } = await import('./services/email.js');
-    
     const testUrl = 'https://eduapp-backed-test-7.onrender.com/verify?token=test123';
-    const result = await sendVerificationEmail('jamjamxolisani@gmail.com', testUrl);
+    
+    // ✅ CHANGE TO: Send to jayxolisani@gmail.com (same as sender)
+    const result = await sendVerificationEmail('jayxolisani@gmail.com', testUrl);
     
     res.json({
       success: result.success,
       message: result.success ? 
-        '✅ SendGrid test email sent - check your inbox!' : 
+        '✅ SendGrid test email sent - check jayxolisani@gmail.com!' : 
         `❌ Failed: ${result.error}`,
       messageId: result.messageId
     });
@@ -101,5 +101,6 @@ app.get('/health', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
 
 
