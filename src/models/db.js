@@ -4,19 +4,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  database: process.env.DB_NAME,
-  ssl: false, // or your SSL config if needed
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Test DB connection on startup without leaking connections
 (async () => {
   try {
     await pool.query('SELECT NOW()');
-    console.log(`✅ Connected to DB: ${process.env.DB_NAME}`);
+    console.log(`✅ Connected to DB successfully`);
   } catch (err) {
     console.error('❌ DB connection error:', err);
   }
