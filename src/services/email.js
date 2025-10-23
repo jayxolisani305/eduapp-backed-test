@@ -15,17 +15,33 @@ export const sendVerificationEmail = async (toEmail, url) => {
     const emailData = {
       personalizations: [{ 
         to: [{ email: toEmail }], 
-        subject: 'Verify Your EduApp Account'
+        subject: 'Verify Your uThando Lwemfundo Account'
       }],
       from: { 
         email: process.env.SENDGRID_FROM_EMAIL || 'jayxolisani@gmail.com',
-        name: process.env.SENDGRID_FROM_NAME || 'EduApp'
+        name: process.env.SENDGRID_FROM_NAME || 'uThando Lwemfundo'
       },
       reply_to: { 
         email: process.env.SENDGRID_FROM_EMAIL || 'jayxolisani@gmail.com',
         name: 'EduApp Support'
       },
+      // ✅ FIXED: Plain text MUST come first, then HTML
       content: [{
+        type: 'text/plain',
+        value: `Welcome to uThando Lwemfundo!
+
+Thank you for signing up. Please verify your email address by clicking the link below:
+
+${url}
+
+This link will expire in 24 hours for security purposes.
+
+If the link doesn't work, copy and paste it into your browser.
+
+If you didn't create an account, you can safely ignore this email.
+
+— The EduApp Team`
+      }, {
         type: 'text/html',
         value: `
           <!DOCTYPE html>
@@ -106,23 +122,8 @@ export const sendVerificationEmail = async (toEmail, url) => {
           </body>
           </html>
         `
-      }, {
-        type: 'text/plain',
-        value: `Welcome to EduApp!
-
-Thank you for signing up. Please verify your email address by clicking the link below:
-
-${url}
-
-This link will expire in 24 hours for security purposes.
-
-If the link doesn't work, copy and paste it into your browser.
-
-If you didn't create an account, you can safely ignore this email.
-
-— The EduApp Team`
       }],
-      categories: ['email_verification'], // Helps with analytics
+      categories: ['email_verification'],
       tracking_settings: {
         click_tracking: { enable: true },
         open_tracking: { enable: true }
@@ -150,9 +151,8 @@ If you didn't create an account, you can safely ignore this email.
         const errorText = await response.text();
         console.error('❌ SendGrid Error:', response.status, errorText);
         
-        // Log specific error for debugging
         if (response.status === 403) {
-          console.error('⚠️ Sender not verified in SendGrid! Visit: https://app.sendgrid.com/settings/sender_auth');
+          console.error('⚠️ Sender not verified! Visit: https://app.sendgrid.com/settings/sender_auth');
         }
         
         return { 
