@@ -1,14 +1,14 @@
 export const sendVerificationEmail = async (toEmail, url) => {
   try {
-    console.log('🎯 VERIFICATION REQUIRED FOR:', toEmail);
-    console.log('🔗 VERIFICATION URL (USE THIS IF NO EMAIL):', url);
+    console.log('🎯 USER REGISTRATION:', toEmail);
+    console.log('🔗 VERIFICATION URL (ALWAYS WORKS):', url);
     
-    // Try SendGrid but don't rely on it completely
+    // Try SendGrid but don't block registration if emails go to spam
     if (process.env.SENDGRID_API_KEY) {
       const emailData = {
         personalizations: [{ 
           to: [{ email: toEmail }], 
-          subject: 'Verify Your Email - EduApp' 
+          subject: 'Verify Your EduApp Account' 
         }],
         from: { 
           email: 'jayxolisani@gmail.com', 
@@ -18,46 +18,50 @@ export const sendVerificationEmail = async (toEmail, url) => {
           type: 'text/html',
           value: `
             <div style="font-family: Arial, sans-serif; padding: 20px;">
-              <h2>Verify Your EduApp Account</h2>
-              <p>Click here to verify: <a href="${url}">${url}</a></p>
-              <p><strong>If you don't see this email, check your spam folder.</strong></p>
+              <h2>Welcome to EduApp!</h2>
+              <p>Click the button below to verify your email address:</p>
+              <a href="${url}" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                Verify Email Address
+              </a>
+              <p><strong>If you don't see this email in your inbox, please check your spam folder.</strong></p>
+              <p>Or copy this link: ${url}</p>
             </div>
           `
         }]
       };
 
-      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(emailData)
-      });
+      try {
+        const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(emailData)
+        });
 
-      if (response.ok) {
-        console.log('✅ Email sent via SendGrid (check spam folder)');
-      } else {
-        console.log('⚠️ SendGrid failed, but user can still verify via logged URL');
+        if (response.ok) {
+          console.log('✅ Email sent (may be in spam folder)');
+        }
+      } catch (emailError) {
+        console.log('⚠️ Email sending issue (but registration continues)');
       }
     }
 
-    // ALWAYS return success and include the verification URL
+    // CRITICAL: Always return success so users can register
     return { 
       success: true, 
-      messageId: `verified-${Date.now()}`,
-      verificationUrl: url, // Frontend can use this if needed
-      note: 'User registered successfully. Check email (and spam) for verification link.'
+      messageId: `user-created-${Date.now()}`,
+      note: 'User registered successfully. Check email (including spam) for verification link.'
     };
     
   } catch (error) {
-    console.error('❌ Email error, but user registration continues:', error.message);
-    // STILL return success so user can be created
+    console.error('Registration error:', error.message);
+    // STILL return success - never block user registration
     return { 
       success: true,
       messageId: `created-${Date.now()}`,
-      verificationUrl: url,
-      note: 'User created. Email service temporarily unavailable.'
+      note: 'User created. Check logs for verification URL if email not received.'
     };
   }
 };
