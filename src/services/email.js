@@ -2,7 +2,6 @@ export const sendVerificationEmail = async (toEmail, url) => {
   try {
     console.log('📧 Preparing to send verification email to:', toEmail);
     
-    // Validate API key is present
     if (!process.env.SENDGRID_API_KEY) {
       throw new Error('SENDGRID_API_KEY environment variable is missing');
     }
@@ -14,8 +13,9 @@ export const sendVerificationEmail = async (toEmail, url) => {
           subject: 'Verify Your Email - EduApp'
         }
       ],
+      // ✅ USING jayxolisani@gmail.com AS VERIFIED SENDER
       from: {
-        email: 'noreply@eduapp.com',
+        email: 'jayxolisani@gmail.com', // ← YOUR VERIFIED EMAIL
         name: 'EduApp'
       },
       content: [
@@ -61,18 +61,18 @@ export const sendVerificationEmail = async (toEmail, url) => {
     });
 
     if (response.ok) {
-      console.log('✅ Email sent successfully via SendGrid REST API');
+      console.log('✅ Email sent successfully via SendGrid!');
       return { 
         success: true, 
         messageId: `sg-${Date.now()}`,
         status: response.status
       };
     } else {
-      const errorText = await response.text();
-      console.error('❌ SendGrid API error:', response.status, errorText);
+      const errorData = await response.json();
+      console.error('❌ SendGrid error details:', errorData);
       return { 
         success: false, 
-        error: `SendGrid API error: ${response.status}`,
+        error: `SendGrid error: ${JSON.stringify(errorData)}`,
         status: response.status
       };
     }
